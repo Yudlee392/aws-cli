@@ -93,6 +93,9 @@ aws logs put-retention-policy --log-group-name /ecs/fresher-duylnd/mysql --reten
 aws logs create-log-group --log-group-name /ecs/fresher-duylnd
 aws logs put-retention-policy --log-group-name /ecs/fresher-duylnd --retention-in-days 1
 
+# IAM Role for ECS Task Execution
+aws iam attach-role-policy --role-name ecsTaskExecutionRole --policy-arn arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+
 # Task Definition (with external JSON for container details)
 TASK_DEF=$(aws ecs register-task-definition --family fresher-duylnd-task --network-mode awsvpc --requires-compatibilities FARGATE --cpu 1024 --memory 2048 --execution-role-arn arn:aws:iam::257394455086:role/ecsTaskExecutionRole --task-role-arn arn:aws:iam::257394455086:role/ecsTaskExecutionRole --container-definitions '[{"name": "nginx","image": "257394455086.dkr.ecr.us-west-2.amazonaws.com/server:latest","cpu": 512,"memory": 1024,"essential": true,"portMappings": [{"containerPort": 80, "protocol": "tcp"}],"logConfiguration": {"logDriver": "awslogs","options": {"awslogs-group": "/ecs/fresher-duylnd","awslogs-region": "us-west-2","awslogs-stream-prefix": "ecs","awslogs-create-group": "true"}}},{"name": "mysql","image": "257394455086.dkr.ecr.us-west-2.amazonaws.com/mysql:latest","cpu": 512,"memory": 1024,"essential": true,"portMappings": [{"containerPort": 3306, "protocol": "tcp"}],"logConfiguration": {"logDriver": "awslogs","options": {"awslogs-group": "/ecs/fresher-duylnd/mysql","awslogs-region": "us-west-2","awslogs-stream-prefix": "ecs","awslogs-create-group": "true"}}}]' --output text --query 'taskDefinition.taskDefinitionArn')
 
